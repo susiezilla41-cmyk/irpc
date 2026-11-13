@@ -447,7 +447,8 @@ struct ContentView: View {
             }
             return
         }
-        
+ 
+        }       
         // Music is actively playing, get current playback
         do {
             let newPlayback = try await manager.getCurrentPlayback()
@@ -473,7 +474,11 @@ struct ContentView: View {
     private func showNoSongPlaying() async {
         await MainActor.run {
             isShowingLastPlayed = false
-            nowPlaying = NowPlayingData(id: "", title: "No song playing", artist: "")
+           nowPlaying = NowPlayingData(
+    id: "",
+    title: "No song playing",
+    artist: manager.debugStatus
+)
             
             if userEnabledRPC && discord.isAuthenticated {
                 discord.clearPlayback()
@@ -503,7 +508,6 @@ struct ContentView: View {
                 }
             }
         } catch {
-        }
     }
 
     private func updateDiscordWithCurrentSong() async {
