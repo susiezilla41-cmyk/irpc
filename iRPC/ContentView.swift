@@ -168,7 +168,7 @@ struct ContentView: View {
                 }
             }
         }
-        .onChange(of: manager.isPlaying) { _, newValue in
+        .onChange(of: manager.isPlaying) { (oldValue: Bool, newValue: Bool) in
             print("🎵 Music playing state changed: \(newValue)")
             DispatchQueue.main.async {
                 withAnimation(.easeInOut(duration: 0.3)) {
