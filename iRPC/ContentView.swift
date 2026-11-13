@@ -459,7 +459,7 @@ struct ContentView: View {
             nowPlaying = NowPlayingData(
                 id: "",
                 title: "No song playing",
-                artist: manager.debugStatus
+                artist: ""
             )
 
             if userEnabledRPC && discord.isAuthenticated {
