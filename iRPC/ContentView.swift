@@ -35,11 +35,9 @@ struct ContentView: View {
     @State private var connectionCheckTimer: AnyCancellable?
     @State private var forceConnectionRefresh = UUID()
 
-    // Direct state tracking to force UI updates
     @State private var isDiscordAuthenticated = false
     @State private var isDiscordReady = false
     @State private var discordUsername: String? = nil
-    @State private var showDebugInfo = false
 
     private var timer: Publishers.Autoconnect<Timer.TimerPublisher> {
         Timer.publish(every: updateInterval, on: .main, in: .common).autoconnect()
@@ -121,23 +119,17 @@ struct ContentView: View {
 
                             Spacer()
                         }
-VStack(alignment: .leading, spacing: 4) {
-    Text("Auth: \(discord.isAuthenticated ? "✅" : "❌")")
-    Text("Ready: \(discord.isReady ? "✅" : "❌")")
-    Text("User: \(discord.username ?? "none")")
-    Text("Music diagnostic: \(manager.debugStatus)")
-}
-.font(.caption)
-.padding(6)
-.background(Color.gray.opacity(0.2))
-.cornerRadius(6)
-                                .font(.caption)
-                                .padding(6)
-                                .background(Color.gray.opacity(0.2))
-                                .cornerRadius(6)
-                                Spacer()
-                            }
+
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Auth: \(discord.isAuthenticated ? "✅" : "❌")")
+                            Text("Ready: \(discord.isReady ? "✅" : "❌")")
+                            Text("User: \(discord.username ?? "none")")
+                            Text("Music diagnostic: \(manager.debugStatus)")
                         }
+                        .font(.caption)
+                        .padding(6)
+                        .background(Color.gray.opacity(0.2))
+                        .cornerRadius(6)
                     }
 
                     if shouldShowRPCToggle {
