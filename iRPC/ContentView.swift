@@ -1,3 +1,4 @@
+
 //
 //  ContentView.swift
 //  iRPC
@@ -38,7 +39,7 @@ struct ContentView: View {
     @State private var isDiscordAuthenticated = false
     @State private var isDiscordReady = false
     @State private var discordUsername: String? = nil
-    @State private var showDebugInfo = false  // Set to true to show debug info in UI
+    @State private var showDebugInfo = false
 
     private var timer: Publishers.Autoconnect<Timer.TimerPublisher> {
         Timer.publish(every: updateInterval, on: .main, in: .common).autoconnect()
@@ -72,8 +73,8 @@ struct ContentView: View {
     private var connectionState: ConnectionState {
         if discord.isAuthorizing || isAuthenticating || isLoading {
             return .connecting
-        } else if isDiscordAuthenticated {  // Use our tracked state
-            if isDiscordReady {  // Use our tracked state
+        } else if isDiscordAuthenticated {
+            if isDiscordReady {
                 return .connected(username: discordUsername)
             } else {
                 return .connecting
@@ -121,7 +122,6 @@ struct ContentView: View {
                             Spacer()
                         }
 
-                        // Debug info to show what's happening
                         if showDebugInfo {
                             HStack {
                                 VStack(alignment: .leading, spacing: 4) {
@@ -201,7 +201,6 @@ struct ContentView: View {
         }
         .task(id: "initializeMusic") {
             if isAuthorized {
-                // Immediately try to show music content regardless of Discord status
                 print("🎵 Initializing music display")
                 await updateNowPlaying(forceRefresh: true)
             }
@@ -256,9 +255,8 @@ struct ContentView: View {
             updateTrackedDiscordState()
         }
     }
-    
+
     private func setupMusicStatusObservers() {
-        // Cancel any existing subscription
         playbackSubscription?.cancel()
 
         playbackSubscription = manager.playbackStatePublisher
@@ -273,15 +271,13 @@ struct ContentView: View {
     }
 
     private func setupConnectionMonitoring() {
-        // Cancel any existing timer
         connectionCheckTimer?.cancel()
-        
+
         connectionCheckTimer = Timer.publish(every: 0.5, on: .main, in: .common)
             .autoconnect()
             .sink { _ in
-                // Always force refresh the connection state to ensure UI stays in sync
                 self.updateTrackedDiscordState()
-                
+
                 let shouldShow = self.shouldShowRPCToggle
                 if self.showRPCToggle != shouldShow {
                     DispatchQueue.main.async {
@@ -291,29 +287,25 @@ struct ContentView: View {
                     }
                 }
             }
-            
+
         print("🔌 Discord connection monitoring started")
     }
 
     private func updateTrackedDiscordState() {
-        // Directly update our state variables from Discord
         let authenticated = discord.isAuthenticated
         let ready = discord.isReady
         let username = discord.username
-        
-        // Only update UI if values have changed
-        if isDiscordAuthenticated != authenticated || 
+
+        if isDiscordAuthenticated != authenticated ||
            isDiscordReady != ready ||
            discordUsername != username {
-            
+
             print("🔄 Discord state changed: Auth=\(authenticated) Ready=\(ready) User=\(username ?? "none")")
-            
-            // Update our tracked state
+
             isDiscordAuthenticated = authenticated
             isDiscordReady = ready
             discordUsername = username
-            
-            // Force UI refresh
+
             forceConnectionRefresh = UUID()
         }
     }
@@ -397,15 +389,12 @@ struct ContentView: View {
     }
 
     private func updateNowPlaying(forceRefresh: Bool = false) async {
-        // Skip if we're not authorized yet
         guard isAuthorized else {
             print("⚠️ Music not authorized yet, skipping updateNowPlaying")
             return
         }
-        
-        // Check if music is playing first
+
         if !manager.isPlaying {
-            // Not playing, so attempt to show the last played song
             do {
                 let recentSongs = try await MHistory.recentlyPlayedSongs(limit: 1)
                 if let lastSong = recentSongs.first {
@@ -413,8 +402,7 @@ struct ContentView: View {
                         print("🎵 No active playback, showing last played: \(lastSong.title)")
                         lastPlayed = lastSong
                         isShowingLastPlayed = true
-                        
-                        // Update nowPlaying with last played info
+
                         nowPlaying = NowPlayingData(
                             id: lastSong.id.rawValue,
                             title: lastSong.title,
@@ -424,13 +412,11 @@ struct ContentView: View {
                             playbackTime: 0,
                             duration: lastSong.duration ?? 0
                         )
-                        
-                        // Only update Discord presence if specifically enabled
+
                         if userEnabledRPC && discord.isAuthenticated && discord.isReady {
-                            // Add a small delay to ensure Discord is ready
                             if forceRefresh {
                                 Task {
-                                    try? await Task.sleep(nanoseconds: 500_000_000) // 0.5 seconds
+                                    try? await Task.sleep(nanoseconds: 500_000_000)
                                     discord.clearPlayback()
                                 }
                             } else {
@@ -447,9 +433,7 @@ struct ContentView: View {
             }
             return
         }
- 
-        }       
-        // Music is actively playing, get current playback
+
         do {
             let newPlayback = try await manager.getCurrentPlayback()
             await MainActor.run {
@@ -457,12 +441,10 @@ struct ContentView: View {
                 nowPlaying = newPlayback
                 print("🎵 Now Playing updated: \(newPlayback.title)")
 
-                // Only update Discord if specifically enabled
                 if userEnabledRPC && discord.isAuthenticated && discord.isReady {
                     updateDiscordDirectly(with: newPlayback)
                 }
 
-                // Always update toggle visibility based on current state
                 updateToggleVisibility()
             }
         } catch {
@@ -470,16 +452,16 @@ struct ContentView: View {
             await showNoSongPlaying()
         }
     }
-    
+
     private func showNoSongPlaying() async {
         await MainActor.run {
             isShowingLastPlayed = false
-           nowPlaying = NowPlayingData(
-    id: "",
-    title: "No song playing",
-    artist: manager.debugStatus
-)
-            
+            nowPlaying = NowPlayingData(
+                id: "",
+                title: "No song playing",
+                artist: manager.debugStatus
+            )
+
             if userEnabledRPC && discord.isAuthenticated {
                 discord.clearPlayback()
             }
@@ -508,6 +490,8 @@ struct ContentView: View {
                 }
             }
         } catch {
+            print("⚠️ Failed to update playback time: \(error.localizedDescription)")
+        }
     }
 
     private func updateDiscordWithCurrentSong() async {
