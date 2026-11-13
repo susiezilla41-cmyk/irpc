@@ -1,0 +1,39 @@
+
+name: Build Unsigned IPA
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Resolve Swift Packages
+        run: xcodebuild -resolvePackageDependencies -project iRPC.xcodeproj
+
+      - name: Build Unsigned App
+        run: |
+          xcodebuild build \
+            -project iRPC.xcodeproj \
+            -scheme iRPC \
+            -configuration Release \
+            -sdk iphoneos \
+            -derivedDataPath build \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO
+
+      - name: Package into IPA
+        run: |
+          mkdir -p Payload
+          cp -r build/Build/Products/Release-iphoneos/iRPC.app Payload/
+          zip -r iRPC.ipa Payload
+
+      - name: Upload IPA
+        uses: actions/upload-artifact@v4
+        with:
+          name: iRPC-unsigned
+          path: iRPC.ipa
