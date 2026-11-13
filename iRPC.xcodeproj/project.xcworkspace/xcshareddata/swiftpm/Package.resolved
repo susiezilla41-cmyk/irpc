@@ -31,10 +31,10 @@
     {
       "identity" : "nowplayingkit",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/itoolio/NowPlayingKit",
+      "location" : "https://github.com/susiezilla41-cmyk/NowPlayingKit",
       "state" : {
         "branch" : "main",
-        "revision" : "6b18f98ae1e0e23ff4f6dc8b63d6e321aa5aede6"
+        "revision" : "4761a29895f0583d4ad539fe40af527a97c662dd"
       }
     },
     {
