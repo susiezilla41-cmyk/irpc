@@ -24,7 +24,7 @@ struct ContentView: View {
     @State private var userEnabledRPC = false
     @State private var showRPCToggle = false
     @StateObject private var discord = DiscordManager(applicationId: 1_370_062_110_272_520_313)
-    private let manager = NowPlayingManager.shared
+    @StateObject private var manager = NowPlayingManager.shared
     @State private var lastUpdateTime: TimeInterval = 0
     private let updateInterval: TimeInterval = 1
     @Environment(\.modelContext) private var modelContext
@@ -121,14 +121,16 @@ struct ContentView: View {
 
                             Spacer()
                         }
-
-                        if showDebugInfo {
-                            HStack {
-                                VStack(alignment: .leading, spacing: 4) {
-                                    Text("Auth: \(discord.isAuthenticated ? "✅" : "❌")")
-                                    Text("Ready: \(discord.isReady ? "✅" : "❌")")
-                                    Text("User: \(discord.username ?? "none")")
-                                }
+VStack(alignment: .leading, spacing: 4) {
+    Text("Auth: \(discord.isAuthenticated ? "✅" : "❌")")
+    Text("Ready: \(discord.isReady ? "✅" : "❌")")
+    Text("User: \(discord.username ?? "none")")
+    Text("Music diagnostic: \(manager.debugStatus)")
+}
+.font(.caption)
+.padding(6)
+.background(Color.gray.opacity(0.2))
+.cornerRadius(6)
                                 .font(.caption)
                                 .padding(6)
                                 .background(Color.gray.opacity(0.2))
